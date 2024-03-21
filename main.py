@@ -1,18 +1,24 @@
 import tkinter as tk
 import requests
-
+import json
 
 def get_country_info():
     country = entry.get()
     url = f"https://restcountries.com/v2/name/{country}"
     response = requests.get(url)
-    data = response.json()[0]
+    data = response.json()
 
-    capital = data["capital"]
-    area = data["area"]
-    population = data["population"]
-    language = data["languages"][0]["name"]
-    currency = data["currencies"][0]["name"]
+    json_output.delete("1.0", tk.END)
+    json_output.insert(tk.END, json.dumps(data, indent=4)) 
+
+    if isinstance(data, list):
+        data = data[0]  
+
+    capital = data.get("capital", "N/A")
+    area = data.get("area", "N/A")
+    population = data.get("population", "N/A")
+    language = data["languages"][0]["name"] if data.get("languages") else "N/A"
+    currency = data["currencies"][0]["name"] if data.get("currencies") else "N/A"
 
     result = f"Hlavní město: {capital}\n"
     result += f"Rozloha: {area} km²\n"
@@ -23,22 +29,19 @@ def get_country_info():
     text.delete("1.0", tk.END)
     text.insert(tk.END, result)
 
-
-# Vytvoření okna
 window = tk.Tk()
 window.title("Informace o zemi")
 
-# Vytvoření vstupního pole
 entry = tk.Entry(window)
 entry.pack()
 
-# Vytvoření tlačítka
 button = tk.Button(window, text="Zjisti", command=get_country_info)
 button.pack()
 
-# Vytvoření textového pole pro výstup
 text = tk.Text(window)
 text.pack()
 
-# Spuštění smyčky událostí GUI
+json_output = tk.Text(window)
+json_output.pack()
+
 window.mainloop()
